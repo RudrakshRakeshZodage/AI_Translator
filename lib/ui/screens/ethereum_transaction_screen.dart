@@ -27,6 +27,10 @@ class _EthereumTransactionScreenState extends State<EthereumTransactionScreen> {
   String _rpcUrl = "https://ethereum-sepolia-rpc.publicnode.com";
   late Web3Client _ethClient;
 
+  // Deployed Smart Contract Addresses (Sepolia)
+  static const String translationRegistryAddress = "0x89E007aC2333f2B30206DF06E667E3Db93CcF54F";
+  static const String tokenToCreditsAddress = "0x40dB42010A6B29CDe5B64EFA3C5aEF96F6f9dC35";
+
   // Wallet State
   String _walletType = "local"; // "local" or "metamask"
   bool _isMetaMaskConnected = false;
