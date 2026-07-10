@@ -16,86 +16,38 @@ It uses a custom **C++ Native Memory Bridge** for stable SIMD performance and a 
 
 ---
 
-## 🔄 System Architecture & Data Flow
+## 🔄 Transaction Lifecycle & Sync Logic
 
-### 1. High-Level Logic Flow
-```mermaid
-graph LR
-    User([User Speech]) --> Mic[Microphone Stream]
-    Mic --> Pipe[Audio Pipeline]
-    Pipe --> Bridge{Native Bridge}
-    Bridge --> W[Whisper Engine]
-    W --> G[Gemma Engine]
-    G --> UI[Flutter UI]
-    
-    style Bridge fill:#f9f,stroke:#333,stroke-width:4px
-```
+This sequence diagram illustrates how transactions are optimistically updated in the UI, stored locally in SQLite when offline, processed by the queue synchronization runner, signed, and broadcasted to the Sepolia testnet once an internet connection is established.
 
-### 2. The "Fortress" Memory Bridge (Deep Dive)
-This diagram shows how we prevent `SIGSEGV` by converting and aligning data for the Snapdragon CPU.
 ```mermaid
 sequenceDiagram
-    participant D as Dart (Flutter)
-    participant B as C++ Bridge
-    participant H as Hardware (SIMD)
-    
-    D->>D: Capture Float32 Buffer
-    D->>D: Convert to Float64 (Double)
-    D->>B: Pass Pointer (Dart-FFI)
-    B->>B: Malloc (System Heap Alignment)
-    B->>B: Loop: Double -> Float32 Conversion
-    B->>H: Execute NEON Kernels
-    H-->>B: Return Transcription
-    B->>B: Free Malloc Buffer
-    B-->>D: Return C-String (strdup)
-```
+    participant User as User (UI)
+    participant DB as SQLite (Local)
+    participant QP as Queue Processor
+    participant Web3 as Sepolia RPC (Node)
 
-### 3. Dynamic Thread Strategy (89% Spec)
-Visualizing how the app maps AI tasks to your phone's physical hardware.
-```mermaid
-graph TD
-    subgraph "Phone Hardware (8 Cores)"
-    C1[Core 0: UI Thread]
-    C2[Core 1: AI Worker]
-    C3[Core 2: AI Worker]
-    C4[Core 3: AI Worker]
-    C5[Core 4: AI Worker]
-    C6[Core 5: AI Worker]
-    C7[Core 6: AI Worker]
-    C8[Core 7: AI Worker]
+    User->>DB: 1. Initiate Transaction (Status: Pending Sync)
+    Note over User, DB: Instant UI Update (Optimistic/Pending)
+
+    QP->>DB: 2. Poll Transactions Queue Table
+    
+    alt If Network is Offline
+        QP->>DB: 3. Retain status as 'Pending Sync'
+    else If Network is Online
+        QP->>QP: 4. Extract & Sign Transaction with Private Key
+        QP->>Web3: 5. POST /eth_sendRawTransaction
+        Web3-->>QP: 6. Return Transaction Hash (txHash)
+        QP->>DB: 7. Update status to 'Completed' + store txHash
+        DB-->>User: 8. UI Sync (Refreshes list to COMPLETED)
     end
 
-    Task[Transcription Task] -->|Isolate.run| C2
-    Task -->|Isolate.run| C3
-    Task -->|Isolate.run| C4
-    Task -->|Isolate.run| C5
-    Task -->|Isolate.run| C6
-    Task -->|Isolate.run| C7
-    Task -->|Isolate.run| C8
-    
-    style C1 fill:#8f8
-    style C2 fill:#f88
-    style C3 fill:#f88
-    style C4 fill:#f88
-    style C5 fill:#f88
-    style C6 fill:#f88
-    style C7 fill:#f88
-    style C8 fill:#f88
-```
-
-### 4. Ethereum Web3 Offline Queue & Online Sync
-This diagram shows how transactions are queued locally when offline and broadcast to the Sepolia testnet when online.
-```mermaid
-graph TD
-    User([User]) --> TxInput[Enter Transaction Info]
-    TxInput --> NetCheck{Is Network Online?}
-    
-    NetCheck -- No/Offline --> Queue[Write to SQLite DB: status='Pending Sync']
-    NetCheck -- Yes/Online --> Sign[Sign Locally with Private Key]
-    Sign --> Broadcast[Broadcast to Sepolia RPC Node]
-    Broadcast --> TxHash[Success: Write status='Completed' with txHash]
-
-    OnlineTrigger[Network Restore / Manual Sync] -->|Sign & Send| Sign
+    loop Background Sync (Every 10s)
+        QP->>DB: 9. Fetch all 'Pending Sync' transactions
+        QP->>QP: 10. Check Internet Connectivity status
+        QP->>Web3: 11. Broadcast & sync outstanding queue
+        QP->>DB: 12. Update statuses in local storage
+    end
 ```
 
 
