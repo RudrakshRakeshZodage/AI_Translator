@@ -10,7 +10,7 @@ It uses a custom **C++ Native Memory Bridge** for stable SIMD performance and a 
 
 ## 📸 Feature Showcase
 
-| Splash | My Talks | Translation | Wallet | Queue/History | Queue Sync |
+| Splash | Connect MetaMask | Onboarding | Dashboard | History | Offline Translation |
 | :---: | :---: | :---: | :---: | :---: | :---: |
 | <img src="screenshots/1.jpg" width="150" /> | <img src="screenshots/2.jpg" width="150" /> | <img src="screenshots/3.jpg" width="150" /> | <img src="screenshots/4.jpg" width="150" /> | <img src="screenshots/6.jpg" width="150" /> | <img src="screenshots/7.jpg" width="150" /> |
 
