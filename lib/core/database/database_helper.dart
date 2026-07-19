@@ -20,7 +20,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'translator_sessions.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE sessions(
@@ -41,11 +41,12 @@ class DatabaseHelper {
           )
         ''');
         await db.execute('''
-          CREATE TABLE eth_transactions(
+          CREATE TABLE stellar_transactions(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             fromAddress TEXT,
             toAddress TEXT,
             amount TEXT,
+            assetCode TEXT,
             timestamp TEXT,
             status TEXT,
             txHash TEXT
@@ -53,13 +54,14 @@ class DatabaseHelper {
         ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
+        if (oldVersion < 3) {
           await db.execute('''
-            CREATE TABLE eth_transactions(
+            CREATE TABLE IF NOT EXISTS stellar_transactions(
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               fromAddress TEXT,
               toAddress TEXT,
               amount TEXT,
+              assetCode TEXT,
               timestamp TEXT,
               status TEXT,
               txHash TEXT
@@ -107,22 +109,22 @@ class DatabaseHelper {
     await db.delete('sessions', where: 'id = ?', whereArgs: [id]);
   }
 
-  // Ethereum Transaction Methods
-  Future<int> addEthTransaction(EthTransaction tx) async {
+  // Stellar Transaction Methods
+  Future<int> addStellarTransaction(StellarTransaction tx) async {
     final db = await database;
-    return await db.insert('eth_transactions', tx.toMap());
+    return await db.insert('stellar_transactions', tx.toMap());
   }
 
-  Future<List<EthTransaction>> getEthTransactions() async {
+  Future<List<StellarTransaction>> getStellarTransactions() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('eth_transactions', orderBy: 'timestamp DESC');
-    return List.generate(maps.length, (i) => EthTransaction.fromMap(maps[i]));
+    final List<Map<String, dynamic>> maps = await db.query('stellar_transactions', orderBy: 'timestamp DESC');
+    return List.generate(maps.length, (i) => StellarTransaction.fromMap(maps[i]));
   }
 
-  Future<void> updateEthTransaction(EthTransaction tx) async {
+  Future<void> updateStellarTransaction(StellarTransaction tx) async {
     final db = await database;
     await db.update(
-      'eth_transactions',
+      'stellar_transactions',
       tx.toMap(),
       where: 'id = ?',
       whereArgs: [tx.id],

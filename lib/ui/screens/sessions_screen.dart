@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../core/database/database_helper.dart';
 import '../../core/models/models.dart';
 import 'home_screen.dart';
-import 'ethereum_transaction_screen.dart';
+import 'stellar_transaction_screen.dart';
 
 
 class SessionsScreen extends StatefulWidget {
@@ -14,6 +14,7 @@ class SessionsScreen extends StatefulWidget {
   @override
   State<SessionsScreen> createState() => _SessionsScreenState();
 }
+
 
 class _SessionsScreenState extends State<SessionsScreen> {
   final DatabaseHelper _dbHelper = DatabaseHelper();
@@ -110,11 +111,11 @@ class _SessionsScreenState extends State<SessionsScreen> {
       actions: [
         IconButton(
           icon: const Icon(Icons.account_balance_wallet_outlined, color: Colors.blueAccent),
-          tooltip: "Ethereum Wallet",
+          tooltip: "Stellar Wallet",
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const EthereumTransactionScreen()),
+              MaterialPageRoute(builder: (_) => const StellarTransactionScreen()),
             );
           },
         ),
