@@ -47,8 +47,10 @@ dependencies:
   share_plus: ^13.1.0
   intl: ^0.20.2
   csv: ^8.0.0
-  web3dart: ^3.0.3
+  stellar_flutter_sdk: ^1.9.4
   http: ^1.6.0
+
+
 
 dev_dependencies:
   flutter_test:

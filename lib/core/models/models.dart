@@ -68,20 +68,22 @@ class TranslationSession {
   }
 }
 
-class EthTransaction {
+class StellarTransaction {
   final int? id;
   final String fromAddress;
   final String toAddress;
   final String amount;
+  final String assetCode; // 'XLM' or 'TranslateCredits'
   final DateTime timestamp;
   final String status; // 'Pending Sync', 'Completed', 'Failed'
   final String? txHash;
 
-  EthTransaction({
+  StellarTransaction({
     this.id,
     required this.fromAddress,
     required this.toAddress,
     required this.amount,
+    required this.assetCode,
     required this.timestamp,
     required this.status,
     this.txHash,
@@ -93,20 +95,22 @@ class EthTransaction {
       'fromAddress': fromAddress,
       'toAddress': toAddress,
       'amount': amount,
+      'assetCode': assetCode,
       'timestamp': timestamp.toIso8601String(),
       'status': status,
       'txHash': txHash,
     };
   }
 
-  factory EthTransaction.fromMap(Map<String, dynamic> map) {
-    return EthTransaction(
+  factory StellarTransaction.fromMap(Map<String, dynamic> map) {
+    return StellarTransaction(
       id: map['id'],
-      fromAddress: map['fromAddress'],
-      toAddress: map['toAddress'],
-      amount: map['amount'],
+      fromAddress: map['fromAddress'] ?? '',
+      toAddress: map['toAddress'] ?? '',
+      amount: map['amount'] ?? '',
+      assetCode: map['assetCode'] ?? 'XLM',
       timestamp: DateTime.parse(map['timestamp']),
-      status: map['status'],
+      status: map['status'] ?? '',
       txHash: map['txHash'],
     );
   }
