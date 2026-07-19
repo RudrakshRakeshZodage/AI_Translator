@@ -1,16 +1,16 @@
-# <img src="assets/logo.png" width="36" height="36" /> BHARAT KI AWAAZ: The Offline-First AI Translator & Web3 Wallet
+# <img src="assets/logo.png" width="36" height="36" /> BHARAT KI AWAAZ: The Offline-First AI Translator & Stellar Wallet
 
-BHARAT KI AWAAZ is a high-performance, **Offline-First** AI translation application built with Flutter and C++. It leverages on-device AI models (Whisper and Gemma) to provide secure, real-time multilingual communication alongside a fully integrated offline-ready Web3 Ethereum wallet.
+BHARAT KI AWAAZ is a high-performance, **Offline-First** AI translation application built with Flutter and C++. It leverages on-device AI models (Whisper and Gemma) to provide secure, real-time multilingual communication alongside a fully integrated offline-ready Web3 Stellar Wallet.
 
-It uses a custom **C++ Native Memory Bridge** for stable SIMD performance and a sophisticated **SQLite synchronization engine** to cache, queue, and sync blockchain transactions with zero internet dependency.
+It uses a custom **C++ Native Memory Bridge** for stable SIMD performance and a sophisticated **SQLite synchronization engine** to cache, queue, and sync Stellar Horizon transactions with zero internet dependency.
 
-![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=flat-square&logo=flutter&logoColor=white) ![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?style=flat-square&logo=dart&logoColor=white) ![C++](https://img.shields.io/badge/C++-%2300599C.svg?style=flat-square&logo=c%2B%2B&logoColor=white) ![SQLite](https://img.shields.io/badge/SQLite-%2307405E.svg?style=flat-square&logo=sqlite&logoColor=white) ![Ethereum](https://img.shields.io/badge/Ethereum-3C3C3D?style=flat-square&logo=ethereum&logoColor=white) ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+   ![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=flat-square&logo=flutter&logoColor=white) ![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?style=flat-square&logo=dart&logoColor=white) ![C++](https://img.shields.io/badge/C++-%2300599C.svg?style=flat-square&logo=c%2B%2B&logoColor=white) ![SQLite](https://img.shields.io/badge/SQLite-%2307405E.svg?style=flat-square&logo=sqlite&logoColor=white) ![Stellar](https://img.shields.io/badge/Stellar-7A00F0?style=flat-square&logo=stellar&logoColor=white) ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
 ---
 
 ## 📸 Feature Showcase
 
-| Splash | Connect MetaMask | Onboarding | Dashboard | History | Offline Translation |
+| Splash | Connect Wallet | Onboarding | Dashboard | History | Offline Translation |
 | :---: | :---: | :---: | :---: | :---: | :---: |
 | <img src="screenshots/1.jpg" width="150" /> | <img src="screenshots/2.jpg" width="150" /> | <img src="screenshots/3.jpg" width="150" /> | <img src="screenshots/4.jpg" width="150" /> | <img src="screenshots/6.jpg" width="150" /> | <img src="screenshots/7.jpg" width="150" /> |
 
@@ -18,14 +18,14 @@ It uses a custom **C++ Native Memory Bridge** for stable SIMD performance and a 
 
 ## 🔄 Transaction Lifecycle & Sync Logic
 
-This sequence diagram illustrates how transactions are optimistically updated in the UI, stored locally in SQLite when offline, processed by the queue synchronization runner, signed, and broadcasted to the Sepolia testnet once an internet connection is established.
+This sequence diagram illustrates how transactions are optimistically updated in the UI, stored locally in SQLite when offline, processed by the queue synchronization runner, signed, and broadcasted to the Stellar Testnet once an internet connection is established.
 
 ```mermaid
 sequenceDiagram
     participant User as User (UI)
     participant DB as SQLite (Local)
     participant QP as Queue Processor
-    participant Web3 as Sepolia RPC (Node)
+    participant Web3 as Stellar Horizon API (Testnet)
 
     User->>DB: 1. Initiate Transaction (Status: Pending Sync)
     Note over User, DB: Instant UI Update (Optimistic/Pending)
@@ -35,8 +35,8 @@ sequenceDiagram
     alt If Network is Offline
         QP->>DB: 3. Retain status as 'Pending Sync'
     else If Network is Online
-        QP->>QP: 4. Extract & Sign Transaction with Private Key
-        QP->>Web3: 5. POST /eth_sendRawTransaction
+        QP->>QP: 4. Extract & Sign Transaction with Secret Key
+        QP->>Web3: 5. POST /transactions
         Web3-->>QP: 6. Return Transaction Hash (txHash)
         QP->>DB: 7. Update status to 'Completed' + store txHash
         DB-->>User: 8. UI Sync (Refreshes list to COMPLETED)
@@ -57,7 +57,6 @@ sequenceDiagram
 - **Framework**: [Flutter](https://flutter.dev/) (3.x)
 - **Language**: [Dart](https://dart.dev/)
 - **State Management**: Reactive Streams & ChangeNotifiers
-- **Async Processing**: Dart Isolates (Multi-threading for AI workloads)
 
 ### 🏗️ Native Bridge (The Core)
 - **Language**: C++17
@@ -73,10 +72,11 @@ sequenceDiagram
   - *Quantization*: 4-bit (Q4_K_M) for high-speed mobile execution
   - *Format*: GGUF (GGML Universal File)
 
-### 🌐 Web3 & Blockchain (Ethereum)
-- **Library**: `web3dart` & `http`
-- **Network**: Ethereum Sepolia Testnet (Chain ID: `11155111`)
-- **RPC Endpoint**: `https://ethereum-sepolia-rpc.publicnode.com`
+### 🌐 Web3 & Blockchain (Stellar & Soroban)
+- **Library**: `stellar_flutter_sdk` & `http`
+- **Network**: Stellar Testnet
+- **Horizon Node**: `https://horizon-testnet.stellar.org`
+- **Smart Contracts (Soroban)**: Rust-based contracts (located in `/contracts`) representing vouchers, credits, subscriptions, referrals, and marketplaces.
 - **Offline Storage**: SQLite database for caching pending transactions and offline history
 
 ### ⚡ Hardware Acceleration & Build
@@ -118,8 +118,9 @@ flutter run --release
 
 ## 📁 Project Structure
 
-- `lib/`: Flutter UI and Core AI Logic.
+- `lib/`: Flutter UI and Core AI Logic (incorporating `StellarTransactionScreen`).
 - `src/`: Native C++ Bridge and AI Engine integrations.
+- `contracts/`: Soroban (Rust) smart contracts for TranslateCredits, family wallet, marketplace, referrals, and subscriptions.
 - `android/app/CMakeLists.txt`: Hardware acceleration and SIMD configuration.
 
 ---
