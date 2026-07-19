@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = [
+    "translate_credits",
+    "gift_voucher",
+    "referrals",
+    "marketplace",
+    "subscriptions",
+    "family_org_wallet",
+]
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = false
+panic = "abort"
+lto = true
+codegen-units = 1

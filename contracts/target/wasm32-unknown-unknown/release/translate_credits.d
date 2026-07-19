@@ -1,0 +1,1 @@
+D:\Rudraksh\College\app\ChidiyaGHAR_Stellar_Pune\contracts\target\wasm32-unknown-unknown\release\translate_credits.wasm: D:\Rudraksh\College\app\ChidiyaGHAR_Stellar_Pune\contracts\translate_credits\src\lib.rs

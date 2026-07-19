@@ -1,0 +1,1 @@
+D:\Rudraksh\College\app\ChidiyaGHAR_Stellar_Pune\contracts\target\wasm32-unknown-unknown\release\family_org_wallet.wasm: D:\Rudraksh\College\app\ChidiyaGHAR_Stellar_Pune\contracts\family_org_wallet\src\lib.rs

@@ -1,0 +1,1 @@
+D:\Rudraksh\College\app\ChidiyaGHAR_Stellar_Pune\contracts\target\wasm32-unknown-unknown\release\libgift_voucher.rlib: D:\Rudraksh\College\app\ChidiyaGHAR_Stellar_Pune\contracts\gift_voucher\src\lib.rs

@@ -1,0 +1,1 @@
+D:\Rudraksh\College\app\ChidiyaGHAR_Stellar_Pune\contracts\target\wasm32-unknown-unknown\release\libsubscriptions.rlib: D:\Rudraksh\College\app\ChidiyaGHAR_Stellar_Pune\contracts\subscriptions\src\lib.rs
