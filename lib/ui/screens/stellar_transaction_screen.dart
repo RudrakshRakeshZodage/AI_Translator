@@ -23,10 +23,9 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
   final _secretKeyController = TextEditingController();
 
   // Stellar Mainnet Contract Config
-  static const String translateCreditsContractId =
-      "CB2VC4KBEHANNPJR6TYONOXX6LYSODIAYJ37HZCC6X4BYORSRXLKGP67";
-  static const String giftVoucherContractId =
-      "CAPEI5YTCN3BRP6FHWDM467M5Y2YWKTM6CUYHI23UYRRYJJITKPT3GCX";
+  final stellar.StellarSDK _sdk = stellar.StellarSDK.PUBLIC;
+  static const String mainnetContractId =
+      "CBGMSY35IZMHNVBFQQY22PA62VWJVXIKC4TU2CTAKRGIJOACZE4EEIWW";
 
   // Network State
   bool _isOnline = true;
@@ -558,29 +557,23 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.shield_outlined, color: Colors.amberAccent, size: 18),
               SizedBox(width: 8),
               Text(
-                "SOROBAN MAINNET SMART CONTRACTS",
+                "VERIFIED SOROBAN MAINNET CONTRACT",
                 style: TextStyle(color: Colors.amberAccent, fontSize: 11, fontWeight: FontWeight.bold),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          const Text("translate_credits:", style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
-          const SelectableText(
-            translateCreditsContractId,
-            style: TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace'),
-          ),
-          const SizedBox(height: 8),
-          const Text("gift_voucher:", style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
-          const SelectableText(
-            giftVoucherContractId,
+          SizedBox(height: 10),
+          Text("Contract ID:", style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
+          SelectableText(
+            mainnetContractId,
             style: TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace'),
           ),
         ],

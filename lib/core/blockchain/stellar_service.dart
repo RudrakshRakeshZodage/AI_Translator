@@ -14,11 +14,11 @@ class StellarService {
     "https://mainnet.sorobanrpc.com",
   );
 
-  // Contract IDs
+  // Active Mainnet Soroban Contract ID
   static const String translateCreditsContractId =
-      "CB2VC4KBEHANNPJR6TYONOXX6LYSODIAYJ37HZCC6X4BYORSRXLKGP67";
+      "CBGMSY35IZMHNVBFQQY22PA62VWJVXIKC4TU2CTAKRGIJOACZE4EEIWW";
   static const String giftVoucherContractId =
-      "CAPEI5YTCN3BRP6FHWDM467M5Y2YWKTM6CUYHI23UYRRYJJITKPT3GCX";
+      "CBGMSY35IZMHNVBFQQY22PA62VWJVXIKC4TU2CTAKRGIJOACZE4EEIWW";
 
   // Treasury / issuer
   static const String treasuryAddress =
