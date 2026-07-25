@@ -22,15 +22,11 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
   final _amountController = TextEditingController();
   final _secretKeyController = TextEditingController();
 
-  // Stellar Mainnet Config
-  final stellar.StellarSDK _sdk = stellar.StellarSDK.PUBLIC;
+  // Stellar Mainnet Contract Config
   static const String translateCreditsContractId =
       "CB2VC4KBEHANNPJR6TYONOXX6LYSODIAYJ37HZCC6X4BYORSRXLKGP67";
   static const String giftVoucherContractId =
       "CAPEI5YTCN3BRP6FHWDM467M5Y2YWKTM6CUYHI23UYRRYJJITKPT3GCX";
-  static const String issuerAddress =
-      "GBTC2UXXM23Z7Y45L4J5L4P2B3L4C5D6E7F8G9H0J1K2L3M4N5O6P7Q8";
-  static const String customAssetCode = "TranslateCredits";
 
   // Network State
   bool _isOnline = true;
