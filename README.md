@@ -1,4 +1,4 @@
-# ⚡ Bharat Ki Awaaz: Offline-First Neural Voice AI & Stellar Soroban Micro-Payments
+# <img src="assets/logo.png" width="40" height="40" /> ⚡ Bharat Ki Awaaz: Offline-First Neural Voice AI & Stellar Soroban Micro-Payments
 
 > **Offline-First Neural Voice AI & Decentralized Stellar Soroban Micro-Payments**
 
@@ -8,11 +8,82 @@ Bharat Ki Awaaz enables uninterrupted voice translation across 31+ regional lang
 
 ---
 
-## 📸 Feature Showcase
+## 📐 Application Wireframe & System Architecture Diagram
 
-| Splash | Connect Wallet | Onboarding | Dashboard | Soroban Wallet | History | Offline Translation |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| <img src="screenshots/1.jpg" width="140" /> | <img src="screenshots/2.jpg" width="140" /> | <img src="screenshots/3.jpg" width="140" /> | <img src="screenshots/4.jpg" width="140" /> | <img src="screenshots/5.jpg" width="140" /> | <img src="screenshots/6.jpg" width="140" /> | <img src="screenshots/7.jpg" width="140" /> |
+Below is the master system wireframe diagram mapping out the end-to-end user application screens, native C++ AI engine, local SQLite database queues, Stellar Soroban Mainnet smart contracts, and cloud database reconciliation.
+
+```mermaid
+graph TD
+    subgraph UI ["📱 Mobile Application Wireframe Flow"]
+        S1["1️⃣ Splash Screen"] --> S2["2️⃣ Connect Wallet / Keypair Gen"]
+        S2 --> S3["3️⃣ Onboarding & Lang Selector"]
+        S3 --> S4["4️⃣ Real-Time Voice Translation Dashboard"]
+        S4 -->|Nav Button| S5["5️⃣ Stellar Soroban Mainnet Wallet"]
+        S4 -->|Nav Button| S6["6️⃣ Transaction History & Queue"]
+        S4 -->|Zero-Net Mode| S7["7️⃣ Offline AI Translation Engine"]
+    end
+
+    subgraph Native ["⚡ On-Device AI Engine & Local Storage"]
+        S7 -->|Microphone Audio PCM| C1["C++ FFI Native Bridge (POSIX Malloc/Free)"]
+        C1 -->|SIMD Hardware Acceleration| C2["Whisper.cpp (STT) + Gemma 2B (LLM Q4_K_M)"]
+        C2 -->|Real-Time Text & Speech| S4
+        S4 -->|Optimistic Deduct / Queue Tx| D1[("Local SQLite / Isar Encrypted Storage")]
+        D1 -->|Cache Queue & Nonce| SyncRunner["Background Connectivity Sync Engine"]
+    end
+
+    subgraph Blockchain ["🌐 Stellar Soroban Mainnet Blockchain"]
+        SyncRunner -->|Connectivity Restored| RPC["Soroban RPC Node (https://mainnet.sorobanrpc.com)"]
+        RPC -->|Invoke Host Function| SC1["translate_credits (CB2VC4...)"]
+        RPC -->|SHA256 Hash Lock| SC2["gift_voucher (CAPEI5...)"]
+        RPC -->|Multi-User Vault| SC3["family_org_wallet"]
+        RPC -->|90/10 Fee Split| SC4["marketplace"]
+        RPC -->|Tier Status| SC5["subscriptions"]
+        RPC -->|5% Reward Bonus| SC6["referrals"]
+    end
+
+    subgraph Cloud ["☁️ Cloud Reconciliation"]
+        SyncRunner -->|Post Sync Confirmation| Supabase[("Supabase PostgreSQL DB")]
+    end
+```
+
+---
+
+## 📱 App Media & Feature Showcase
+
+### 📊 Quick Screen Overview
+
+| 1. Splash Screen | 2. Connect Wallet | 3. Onboarding | 4. Dashboard |
+| :---: | :---: | :---: | :---: |
+| <img src="screenshots/1.jpg" width="180" /> | <img src="screenshots/2.jpg" width="180" /> | <img src="screenshots/3.jpg" width="180" /> | <img src="screenshots/4.jpg" width="180" /> |
+
+| 5. Soroban Mainnet Wallet | 6. Transaction History | 7. Offline Translation |
+| :---: | :---: | :---: |
+| <img src="screenshots/5.jpg" width="180" /> | <img src="screenshots/6.jpg" width="180" /> | <img src="screenshots/7.jpg" width="180" /> |
+
+---
+
+### 🖼️ Detailed App Screen Screenshots
+
+#### 1️⃣ Splash & Application Launch
+![Splash Screen](screenshots/1.jpg)
+
+#### 2️⃣ Web3 Wallet Key Import & Generation
+![Connect Wallet](screenshots/2.jpg)
+
+#### 3️⃣ Interactive Multilingual Onboarding
+![Onboarding](screenshots/3.jpg)
+
+#### 4️⃣ Real-Time Voice Translation Dashboard
+![Dashboard](screenshots/4.jpg)
+
+#### 5️⃣ Stellar Soroban Mainnet In-App Wallet
+![Soroban Wallet](screenshots/5.jpg)
+
+#### 6️⃣ Offline Local History & Transaction Queue
+![Transaction History](screenshots/6.jpg)
+
+#### 7️⃣ Zero-Connectivity Neural AI Translation
+![Offline Translation](screenshots/7.jpg)
 
 ---
 
