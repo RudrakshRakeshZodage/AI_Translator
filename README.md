@@ -1,127 +1,124 @@
-# <img src="assets/logo.png" width="36" height="36" /> BHARAT KI AWAAZ: The Offline-First AI Translator & Stellar Wallet
+# ⚡ Bharat Ki Awaaz: Offline-First Neural Voice AI & Stellar Soroban Micro-Payments
 
-BHARAT KI AWAAZ is a high-performance, **Offline-First** AI translation application built with Flutter and C++. It leverages on-device AI models (Whisper and Gemma) to provide secure, real-time multilingual communication alongside a fully integrated offline-ready Web3 Stellar Wallet.
+> **Offline-First Neural Voice AI & Decentralized Stellar Soroban Micro-Payments**
 
-It uses a custom **C++ Native Memory Bridge** for stable SIMD performance and a sophisticated **SQLite synchronization engine** to cache, queue, and sync Stellar Horizon transactions with zero internet dependency.
+Bharat Ki Awaaz enables uninterrupted voice translation across 31+ regional languages in zero-connectivity environments (rural villages, subway tunnels, highway dead zones, emergency disaster zones), paired with sub-cent micro-credit settlements powered by **Stellar Soroban Smart Contracts**.
 
-   ![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=flat-square&logo=flutter&logoColor=white) ![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?style=flat-square&logo=dart&logoColor=white) ![C++](https://img.shields.io/badge/C++-%2300599C.svg?style=flat-square&logo=c%2B%2B&logoColor=white) ![SQLite](https://img.shields.io/badge/SQLite-%2307405E.svg?style=flat-square&logo=sqlite&logoColor=white) ![Stellar](https://img.shields.io/badge/Stellar-7A00F0?style=flat-square&logo=stellar&logoColor=white) ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
-
----
-
-## 📸 Feature Showcase
-
-| Splash | Connect Wallet | Onboarding | Dashboard | History | Offline Translation |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| <img src="screenshots/1.jpg" width="150" /> | <img src="screenshots/2.jpg" width="150" /> | <img src="screenshots/3.jpg" width="150" /> | <img src="screenshots/4.jpg" width="150" /> | <img src="screenshots/6.jpg" width="150" /> | <img src="screenshots/7.jpg" width="150" /> |
+![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=flat-square&logo=flutter&logoColor=white) ![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?style=flat-square&logo=dart&logoColor=white) ![C++](https://img.shields.io/badge/C++-%2300599C.svg?style=flat-square&logo=c%2B%2B&logoColor=white) ![SQLite](https://img.shields.io/badge/SQLite-%2307405E.svg?style=flat-square&logo=sqlite&logoColor=white) ![Stellar](https://img.shields.io/badge/Stellar-7A00F0?style=flat-square&logo=stellar&logoColor=white) ![Soroban](https://img.shields.io/badge/Soroban-Rust-orange?style=flat-square&logo=rust&logoColor=white)
 
 ---
 
-## 🔄 Transaction Lifecycle & Sync Logic
+## 🎯 Problem Statement (PS) & Unique Selling Proposition (USP)
 
-This sequence diagram illustrates how transactions are optimistically updated in the UI, stored locally in SQLite when offline, processed by the queue synchronization runner, signed, and broadcasted to the Stellar Testnet once an internet connection is established.
+### 📌 Problem Solved (PS)
+* **Zero-Connectivity Blackouts:** In rural villages, subway tunnels, highway dead zones, and disaster relief sites, internet connectivity is non-existent or unreliable. Traditional cloud voice translation and Web3 dApps fail without an internet connection, locking users out of cross-lingual communication and micro-transactions.
+* **Double-Spending & Replay Attacks:** Synchronizing offline micro-credit consumption to a public blockchain without exposing the network to double-spending or replay attacks.
+
+### 💡 Unique Selling Proposition (USP)
+1. **Offline-First Neural Voice AI Engine:** Uninterrupted real-time voice-to-voice translation across 31+ regional languages executed locally on-device via custom C++ SIMD hardware acceleration (ARM NEON).
+2. **Decentralized Soroban Micro-Payments:** Cryptographic SHA-256 hash-locked vouchers, optimistic UI state updates, offline transaction queues (Isar / SQLite), and automatic background reconciliation upon reconnection.
+3. **Sub-Cent Micro-Credit Settlement:** Ultra-low transaction fees powered by Stellar Soroban smart contracts with sequence nonces and cryptographic UUID verification.
+
+---
+
+## 🌐 Deployed Stellar Mainnet Smart Contracts
+
+| Contract / Account | Address / Contract ID | Stellar Expert Explorer Link | Description |
+| :--- | :--- | :--- | :--- |
+| **`translate_credits`** | [`CB2VC4KBEHANNPJR6TYONOXX6LYSODIAYJ37HZCC6X4BYORSRXLKGP67`](https://stellar.expert/explorer/public/contract/CB2VC4KBEHANNPJR6TYONOXX6LYSODIAYJ37HZCC6X4BYORSRXLKGP67) | [View on Explorer](https://stellar.expert/explorer/public/contract/CB2VC4KBEHANNPJR6TYONOXX6LYSODIAYJ37HZCC6X4BYORSRXLKGP67) | Custom token contract with offline sync, mint, burn & nonce replay protection. |
+| **`gift_voucher`** | [`CAPEI5YTCN3BRP6FHWDM467M5Y2YWKTM6CUYHI23UYRRYJJITKPT3GCX`](https://stellar.expert/explorer/public/contract/CAPEI5YTCN3BRP6FHWDM467M5Y2YWKTM6CUYHI23UYRRYJJITKPT3GCX) | [View on Explorer](https://stellar.expert/explorer/public/contract/CAPEI5YTCN3BRP6FHWDM467M5Y2YWKTM6CUYHI23UYRRYJJITKPT3GCX) | SHA-256 hash-locked offline voucher creation, redemption & refund engine. |
+| **Mainnet Contract** | [`CBGMSY35IZMHNVBFQQY22PA62VWJVXIKC4TU2CTAKRGIJOACZE4EEIWW`](https://stellar.expert/explorer/public/contract/CBGMSY35IZMHNVBFQQY22PA62VWJVXIKC4TU2CTAKRGIJOACZE4EEIWW) | [View on Explorer](https://stellar.expert/explorer/public/contract/CBGMSY35IZMHNVBFQQY22PA62VWJVXIKC4TU2CTAKRGIJOACZE4EEIWW) | Primary Soroban Mainnet wallet contract integration. |
+| **Treasury Account** | [`GAYKFM7LIRRQLGCEEP6JXBRTIZLG3DUBPKRH57ZDQJE4EJIAZ34EUTOI`](https://stellar.expert/explorer/public/account/GAYKFM7LIRRQLGCEEP6JXBRTIZLG3DUBPKRH57ZDQJE4EJIAZ34EUTOI) | [View on Explorer](https://stellar.expert/explorer/public/account/GAYKFM7LIRRQLGCEEP6JXBRTIZLG3DUBPKRH57ZDQJE4EJIAZ34EUTOI) | Protocol ecosystem treasury and liquidity pool account. |
+
+---
+
+## 🏗️ Sequence Architecture & Sync Logic
+
+Below is the complete sequence diagram detailing how **Stellar Soroban** processes offline transaction queues, optimistic UI updates, SHA-256 hash-locked vouchers, background sync loops, and smart contract invocations.
 
 ```mermaid
 sequenceDiagram
-    participant User as User (UI)
-    participant DB as SQLite (Local)
-    participant QP as Queue Processor
-    participant Web3 as Stellar Horizon API (Testnet)
+    autonumber
+    actor User as User (UI)
+    participant LocalDB as Local Queue (SQLite / Isar)
+    participant Sync as Sync Engine
+    participant Supabase as Supabase Backend
+    participant RPC as Soroban RPC Node
+    participant Contract as Soroban Smart Contracts
 
-    User->>DB: 1. Initiate Transaction (Status: Pending Sync)
-    Note over User, DB: Instant UI Update (Optimistic/Pending)
-
-    QP->>DB: 2. Poll Transactions Queue Table
+    note over User,LocalDB: Phase 1: Offline Execution & Optimistic UI
+    User->>LocalDB: 1. Perform Voice Translation / Deduct Credits
+    note over User,LocalDB: Instant UI Update (Optimistic Balance Reduction)
+    LocalDB-->>User: 2. UI Balance Updated (Status: Unsynced)
     
-    alt If Network is Offline
-        QP->>DB: 3. Retain status as 'Pending Sync'
-    else If Network is Online
-        QP->>QP: 4. Extract & Sign Transaction with Secret Key
-        QP->>Web3: 5. POST /transactions
-        Web3-->>QP: 6. Return Transaction Hash (txHash)
-        QP->>DB: 7. Update status to 'Completed' + store txHash
-        DB-->>User: 8. UI Sync (Refreshes list to COMPLETED)
-    end
+    User->>LocalDB: 3. Create Offline Voucher (Code: BKA-89X)
+    LocalDB-->>LocalDB: 4. Hash Code SHA256(Code) & Save Local Record
 
-    loop Background Sync (Every 10s)
-        QP->>DB: 9. Fetch all 'Pending Sync' transactions
-        QP->>QP: 10. Check Internet Connectivity status
-        QP->>Web3: 11. Broadcast & sync outstanding queue
-        QP->>DB: 12. Update statuses in local storage
+    note over Sync,Contract: Phase 2: Reconnection & Queue Processing
+    loop Background Connectivity Monitor
+        Sync->>Sync: 5. Check Connectivity (ConnectivityResult != none)
     end
+    
+    Sync->>LocalDB: 6. Fetch Unsynced Queued Transactions & Vouchers
+    LocalDB-->>Sync: 7. Return Pending Queue Payload
+
+    note over Sync,Contract: Phase 3: Stellar Soroban Contract Invocation
+    Sync->>RPC: 8. SimulateTransaction (invokeHostFunction)
+    RPC-->>Sync: 9. Return Resource Fee & Soroban Footprint Auth
+    Sync->>RPC: 10. SendTransaction (Signed Tx with User Keypair)
+    
+    RPC->>Contract: 11. Execute Contract Method (transfer / sync_offline_usage)
+    Contract-->>RPC: 12. State Updated & Emit On-Chain Events
+    RPC-->>Sync: 13. Return Confirmed Transaction Hash (TxHash)
+
+    note over Sync,User: Phase 4: State Reconciliation & UI Sync
+    Sync->>Supabase: 14. POST /sync_offline_data (Payload + TxHash)
+    Supabase-->>Sync: 15. Confirm Remote Profile Balance Updated
+    Sync->>LocalDB: 16. Update Local Status (isSynced = true)
+    LocalDB-->>User: 17. UI Sync (Green On-Chain Checkmark & Reconciled Balance)
 ```
 
+---
 
-## 🛠️ Detailed Technology Stack
+## 📜 Deployed Soroban Smart Contracts (Rust)
 
-### 📱 Frontend & UI
-- **Framework**: [Flutter](https://flutter.dev/) (3.x)
-- **Language**: [Dart](https://dart.dev/)
-- **State Management**: Reactive Streams & ChangeNotifiers
+| Contract | Location | Key Methods | Functionality |
+| :--- | :--- | :--- | :--- |
+| `translate_credits` | [`contracts/translate_credits`](file:///d:/Rudraksh/College/app/AI_Translator/contracts/translate_credits/src/lib.rs) | `initialize`, `mint`, `burn`, `transfer`, `sync_offline_usage`, `batch_sync_offline_usage` | Custom token contract with nonce replay prevention, TTL extension & duplicate detection. |
+| `gift_voucher` | [`contracts/gift_voucher`](file:///d:/Rudraksh/College/app/AI_Translator/contracts/gift_voucher/src/lib.rs) | `create_voucher`, `redeem_voucher`, `refund_voucher` | SHA-256 hash-locked offline vouchers. |
+| `family_org_wallet` | [`contracts/family_org_wallet`](file:///d:/Rudraksh/College/app/AI_Translator/contracts/family_org_wallet/src/lib.rs) | `add_member`, `withdraw`, `remove_member` | Multi-user org vault with daily member caps. |
+| `marketplace` | [`contracts/marketplace`](file:///d:/Rudraksh/College/app/AI_Translator/contracts/marketplace/src/lib.rs) | `list_item`, `purchase_item` | Voice pack sales with 90% creator / 10% platform fee split. |
+| `subscriptions` | [`contracts/subscriptions`](file:///d:/Rudraksh/College/app/AI_Translator/contracts/subscriptions/src/lib.rs) | `subscribe`, `is_active` | On-chain time-bound unlimited translation tiers. |
+| `referrals` | [`contracts/referrals`](file:///d:/Rudraksh/College/app/AI_Translator/contracts/referrals/src/lib.rs) | `set_referrer`, `reward_purchase` | 5% referrer & referee bonus reward engine. |
 
-### 🏗️ Native Bridge (The Core)
-- **Language**: C++17
-- **Interoperability**: [Dart FFI](https://dart.dev/guides/libraries/c-interop) (Foreign Function Interface)
-- **Logging**: Android Native `liblog` (utilizing `__android_log_print`)
-- **Memory Management**: POSIX-standard `malloc`/`free` with hardened pointer tagging for Android 14+
+---
 
-### 🤖 Artificial Intelligence Models
-- **Speech-to-Text**: [Whisper.cpp](https://github.com/ggerganov/whisper.cpp) 
-  - *Model*: Base (Multilingual)
-  - *Sampling*: Greedy decoding for real-time responsiveness
-- **Translation (LLM)**: [Gemma 2B](https://ai.google.dev/gemma)
-  - *Quantization*: 4-bit (Q4_K_M) for high-speed mobile execution
-  - *Format*: GGUF (GGML Universal File)
+## 🛠️ Technology Stack
 
-### 🌐 Web3 & Blockchain (Stellar & Soroban)
-- **Library**: `stellar_flutter_sdk` & `http`
-- **Network**: Stellar Testnet
-- **Horizon Node**: `https://horizon-testnet.stellar.org`
-- **Smart Contracts (Soroban)**: Rust-based contracts (located in `/contracts`) representing vouchers, credits, subscriptions, referrals, and marketplaces.
-- **Offline Storage**: SQLite database for caching pending transactions and offline history
+* **Frontend App:** Flutter, Dart (`stellar_flutter_sdk`, `http`).
+* **Native AI Core:** C++17, Dart FFI, Whisper.cpp & Gemma 2B (GGUF), ARM NEON SIMD hardware acceleration.
+* **Offline Storage:** SQLite & Isar DB (Encrypted offline transaction queues, user keypairs, offline vouchers).
+* **Blockchain:** Stellar Soroban (Rust Smart Contracts compiled to WebAssembly `.wasm`).
+* **Cloud Database:** Supabase PostgreSQL with Row-Level Security (RLS).
 
-### ⚡ Hardware Acceleration & Build
-- **Instruction Set**: ARMv8-A (64-bit)
-- **SIMD Engine**: [ARM NEON](https://developer.arm.com/architectures/instruction-sets/simd-isas/neon) (Stabilized with Goldilocks Patch)
-- **Build System**: CMake 3.22+
-- **Compiler**: Clang++ (via Android NDK r26b)
-- **Platform**: Android SDK 24+ (Vulkan-ready)
+---
 
-## ⚡ Performance Optimization & Stability
+## 🚀 Quick Start & Contract Deployment
 
-### 1. The "Goldilocks" Stability Patch
-To ensure maximum speed without the common `SIGSEGV` crashes on modern Snapdragon chips (like the Vivo T3x), we implemented a custom header-level stability patch. This allows the engine to use **ARM NEON** for 50x speed while safely disabling problematic extensions (SVE/DOTPROD) that cause hardware-level faults.
+```powershell
+# 1. Compile Soroban WASM Smart Contracts
+cd contracts
+.\build.ps1
 
-### 2. Dynamic 90% Spec Utilization
-The application dynamically detects the hardware specifications of the host device. It automatically calculates the optimal thread count using the formula:
-`Threads = Max(1, Hardware_Cores - 1)`
-This ensures the app utilizes **~90% of the device's raw power** while keeping the UI thread smooth and responsive.
+# 2. Deploy contracts to Stellar Mainnet
+.\deploy_mainnet.ps1
+```
 
-### 3. Memory Integrity Bridge
-We use a hardened "Fortress Mode" memory bridge. Audio data is converted from Dart's `Double` precision to C++ `Float` using direct system allocation (`malloc`), preventing memory corruption and ensuring perfect data alignment for the AI's mathematical kernels.
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Flutter SDK (latest)
-- Android NDK (r26+)
-- AI Models (GGUF format) placed in:
-  `/data/user/0/com.antigravity.ai_translator/app_flutter/models/`
-
-### Build Instructions
 ```bash
-# 1. Clean the build cache to ensure NEON flags are applied
+# 3. Build & Run Flutter App
 flutter clean
-
-# 2. Build and Run on your device
 flutter run --release
 ```
 
-## 📁 Project Structure
-
-- `lib/`: Flutter UI and Core AI Logic (incorporating `StellarTransactionScreen`).
-- `src/`: Native C++ Bridge and AI Engine integrations.
-- `contracts/`: Soroban (Rust) smart contracts for TranslateCredits, family wallet, marketplace, referrals, and subscriptions.
-- `android/app/CMakeLists.txt`: Hardware acceleration and SIMD configuration.
-
 ---
-Built with 💙 for the next generation of private communication.
+Built with 💙 for seamless offline communication & decentralized Web3 micro-settlements.
