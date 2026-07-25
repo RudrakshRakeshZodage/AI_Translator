@@ -1,10 +1,9 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:stellar_flutter_sdk/stellar_flutter_sdk.dart' as stellar;
 
+import '../../core/blockchain/stellar_service.dart';
 import '../../core/database/database_helper.dart';
 import '../../core/models/models.dart';
 
@@ -17,14 +16,20 @@ class StellarTransactionScreen extends StatefulWidget {
 
 class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
   final DatabaseHelper _dbHelper = DatabaseHelper();
+  final StellarService _stellarService = StellarService();
   final _formKey = GlobalKey<FormState>();
   final _toController = TextEditingController();
   final _amountController = TextEditingController();
   final _secretKeyController = TextEditingController();
 
-  // Stellar Network Config
-  final stellar.StellarSDK _sdk = stellar.StellarSDK.TESTNET;
-  static const String issuerAddress = "GBTC2UXXM23Z7Y45L4J5L4P2B3L4C5D6E7F8G9H0J1K2L3M4N5O6P7Q8";
+  // Stellar Mainnet Config
+  final stellar.StellarSDK _sdk = stellar.StellarSDK.PUBLIC;
+  static const String translateCreditsContractId =
+      "CB2VC4KBEHANNPJR6TYONOXX6LYSODIAYJ37HZCC6X4BYORSRXLKGP67";
+  static const String giftVoucherContractId =
+      "CAPEI5YTCN3BRP6FHWDM467M5Y2YWKTM6CUYHI23UYRRYJJITKPT3GCX";
+  static const String issuerAddress =
+      "GBTC2UXXM23Z7Y45L4J5L4P2B3L4C5D6E7F8G9H0J1K2L3M4N5O6P7Q8";
   static const String customAssetCode = "TranslateCredits";
 
   // Network State
@@ -66,65 +71,34 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
     _fetchBalances();
   }
 
-  void _importSecretKey(String secretKey) {
-    try {
-      final keypair = stellar.KeyPair.fromSecretSeed(secretKey.trim());
-      setState(() {
-        _localSecretKey = secretKey.trim();
-        _localAccountId = keypair.accountId;
-      });
-      _fetchBalances();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Stellar wallet imported successfully!")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid Stellar Secret Key format.")),
-      );
-    }
-  }
-
   Future<void> _fetchBalances() async {
     if (_localAccountId == null) return;
 
     if (!_isOnline) {
-      return; // Keep cached/fallback balance when offline
+      return; // Keep cached balance when offline
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
-      final account = await _sdk.accounts.account(_localAccountId!);
-      double newXlm = 0.0;
-      double newCredits = 0.0;
-      bool foundTrustline = false;
-
-      for (var balance in account.balances) {
-        if (balance.assetType == 'native') {
-          newXlm = double.parse(balance.balance);
-        } else if (balance.assetCode == customAssetCode && balance.assetIssuer == issuerAddress) {
-          newCredits = double.parse(balance.balance);
-          foundTrustline = true;
-        }
-      }
+      final xlm = await _stellarService.getXlmBalance(_localAccountId!);
+      final credits = await _stellarService.getCreditsBalance(_localAccountId!);
 
       if (mounted) {
         setState(() {
-          _xlmBalance = newXlm;
-          _creditsBalance = newCredits;
-          _hasTrustline = foundTrustline;
+          _xlmBalance = xlm;
+          _creditsBalance = credits;
+          _hasTrustline = credits > 0 || xlm > 0;
           _isLoading = false;
         });
       }
-    } catch (e) {
-      // Account might not exist on ledger yet (needs Friendbot funding)
+    } catch (_) {
       if (mounted) {
         setState(() {
-          _xlmBalance = 0.0;
-          _creditsBalance = 0.0;
-          _hasTrustline = false;
           _isLoading = false;
         });
       }
@@ -133,48 +107,17 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
 
   Future<void> _loadTransactions() async {
     final list = await _dbHelper.getStellarTransactions();
-    setState(() {
-      _transactions = list;
-    });
-  }
-
-  // Stellar Friendbot to fund account with 10k XLM
-  Future<void> _fundWithFriendbot() async {
-    if (!_isOnline) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Friendbot is unavailable offline.")),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _statusMessage = "Funding account via Friendbot...";
-    });
-
-    try {
-      final response = await http.get(Uri.parse("https://friendbot.stellar.org?addr=$_localAccountId"));
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Friendbot Success! +10,000 XLM credited!")),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Friendbot response: ${response.statusCode}")),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Friendbot request failed: ${e.toString()}")),
-      );
-    } finally {
-      _fetchBalances();
+    if (mounted) {
+      setState(() {
+        _transactions = list;
+      });
     }
   }
 
-  // Setup trustline for TranslateCredits
+  // Setup trustline on Stellar Mainnet for TranslateCredits
   Future<void> _establishTrustline() async {
     if (!_isOnline) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Cannot establish trustline offline.")),
       );
@@ -185,42 +128,34 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
 
     setState(() {
       _isLoading = true;
-      _statusMessage = "Establishing trustline for TranslateCredits...";
+      _statusMessage = "Establishing Mainnet trustline...";
     });
 
     try {
-      final sourceKeyPair = stellar.KeyPair.fromSecretSeed(_localSecretKey!);
-      final sourceAccount = await _sdk.accounts.account(sourceKeyPair.accountId);
-
-      final asset = stellar.Asset.createNonNativeAsset(customAssetCode, issuerAddress);
-      final changeTrustOp = stellar.ChangeTrustOperationBuilder(asset, "99999999").build();
-
-      final tx = stellar.TransactionBuilder(sourceAccount)
-          .addOperation(changeTrustOp)
-          .build();
-
-      tx.sign(sourceKeyPair, stellar.Network.TESTNET);
-      final response = await _sdk.submitTransaction(tx);
-
-      if (response.success) {
+      final success = await _stellarService.setupTrustline(_localSecretKey!);
+      if (!mounted) return;
+      if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Trustline established successfully!")),
+          const SnackBar(content: Text("Mainnet Trustline established successfully!")),
         );
         _fetchBalances();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to submit trustline transaction.")),
+          const SnackBar(content: Text("Failed to establish Mainnet trustline.")),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: ${e.toString()}")),
       );
     } finally {
-      setState(() {
-        _isLoading = false;
-        _statusMessage = "";
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _statusMessage = "";
+        });
+      }
     }
   }
 
@@ -247,11 +182,12 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
       _toController.clear();
       _amountController.clear();
       _loadTransactions();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Offline: Transaction queued successfully!")),
+        const SnackBar(content: Text("Offline: Transaction queued locally!")),
       );
     } else {
-      // Execute transaction on Stellar network
+      // Execute transaction on Stellar Mainnet
       await _executeTransaction(fromAddress, toAddress, amount, currentTab);
     }
   }
@@ -259,31 +195,35 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
   Future<void> _executeTransaction(String from, String to, String amountStr, String assetType) async {
     setState(() {
       _isLoading = true;
-      _statusMessage = "Initiating Stellar payment...";
+      _statusMessage = "Initiating Stellar Mainnet transfer...";
     });
 
     try {
-      final sourceKeyPair = stellar.KeyPair.fromSecretSeed(_localSecretKey!);
-      final sourceAccount = await _sdk.accounts.account(sourceKeyPair.accountId);
+      final double amt = double.parse(amountStr);
+      String? txHash;
 
-      final asset = assetType == "XLM"
-          ? stellar.Asset.NATIVE
-          : stellar.Asset.createNonNativeAsset(customAssetCode, issuerAddress);
+      if (assetType == "TranslateCredits") {
+        txHash = await _stellarService.transferCredits(_localSecretKey!, to, amt);
+      } else {
+        // Native XLM Mainnet transfer
+        final sourceKeyPair = stellar.KeyPair.fromSecretSeed(_localSecretKey!);
+        final sourceAccount = await _sdk.accounts.account(sourceKeyPair.accountId);
+        final paymentOp = stellar.PaymentOperationBuilder(to, stellar.Asset.NATIVE, amountStr).build();
 
-      final paymentOp = stellar.PaymentOperationBuilder(to, asset, amountStr).build();
+        final tx = stellar.TransactionBuilder(sourceAccount)
+            .addOperation(paymentOp)
+            .build();
 
-      final tx = stellar.TransactionBuilder(sourceAccount)
-          .addOperation(paymentOp)
-          .build();
+        tx.sign(sourceKeyPair, stellar.Network.PUBLIC);
+        final response = await _sdk.submitTransaction(tx);
+        if (response.success) {
+          txHash = response.hash;
+        }
+      }
 
-      tx.sign(sourceKeyPair, stellar.Network.TESTNET);
-      
-      setState(() {
-        _statusMessage = "Submitting transaction to Stellar network...";
-      });
-      final response = await _sdk.submitTransaction(tx);
+      if (!mounted) return;
 
-      if (response.success) {
+      if (txHash != null) {
         final dbTx = StellarTransaction(
           fromAddress: from,
           toAddress: to,
@@ -291,7 +231,7 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
           assetCode: assetType,
           timestamp: DateTime.now(),
           status: "Completed",
-          txHash: response.hash,
+          txHash: txHash,
         );
         await _dbHelper.addStellarTransaction(dbTx);
         _toController.clear();
@@ -300,29 +240,33 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
         _fetchBalances();
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Payment Successful! Hash: ${response.hash}")),
+          SnackBar(content: Text("Mainnet Transfer Successful! Hash: $txHash")),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Transaction submission failed on-chain.")),
+          const SnackBar(content: Text("Mainnet transaction submission failed.")),
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Payment failed: ${e.toString()}")),
       );
     } finally {
-      setState(() {
-        _isLoading = false;
-        _statusMessage = "";
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _statusMessage = "";
+        });
+      }
     }
   }
 
-  // Sync offline transactions
+  // Sync offline transactions with Soroban Mainnet
   Future<void> _syncQueuedTransactions() async {
     final pending = _transactions.where((tx) => tx.status == "Pending Sync").toList();
     if (pending.isEmpty) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("No pending transactions to sync.")),
       );
@@ -330,6 +274,7 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
     }
 
     if (!_isOnline) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Cannot sync while offline.")),
       );
@@ -338,28 +283,22 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
 
     setState(() {
       _isLoading = true;
-      _statusMessage = "Syncing queued transactions...";
+      _statusMessage = "Syncing queued transactions to Soroban Mainnet...";
     });
 
     for (var tx in pending) {
       try {
-        final sourceKeyPair = stellar.KeyPair.fromSecretSeed(_localSecretKey!);
-        final sourceAccount = await _sdk.accounts.account(sourceKeyPair.accountId);
+        final double amt = double.tryParse(tx.amount) ?? 0.0;
+        final txHash = await _stellarService.syncOfflineUsageRecord(
+          userSecret: _localSecretKey!,
+          recordIdHex: _stellarService.sha256Hash("${tx.fromAddress}:${tx.timestamp}"),
+          amount: amt,
+          timestamp: tx.timestamp.millisecondsSinceEpoch ~/ 1000,
+          expiry: (DateTime.now().millisecondsSinceEpoch ~/ 1000) + 86400,
+          nonce: await _stellarService.getUserOnChainNonce(_localAccountId!) + 1,
+        );
 
-        final asset = tx.assetCode == "XLM"
-            ? stellar.Asset.NATIVE
-            : stellar.Asset.createNonNativeAsset(customAssetCode, issuerAddress);
-
-        final paymentOp = stellar.PaymentOperationBuilder(tx.toAddress, asset, tx.amount).build();
-
-        final stellarTx = stellar.TransactionBuilder(sourceAccount)
-            .addOperation(paymentOp)
-            .build();
-
-        stellarTx.sign(sourceKeyPair, stellar.Network.TESTNET);
-        final response = await _sdk.submitTransaction(stellarTx);
-
-        if (response.success) {
+        if (txHash != null) {
           final updated = StellarTransaction(
             id: tx.id,
             fromAddress: tx.fromAddress,
@@ -368,7 +307,7 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
             assetCode: tx.assetCode,
             timestamp: tx.timestamp,
             status: "Completed",
-            txHash: response.hash,
+            txHash: txHash,
           );
           await _dbHelper.updateStellarTransaction(updated);
         } else {
@@ -383,7 +322,7 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
           );
           await _dbHelper.updateStellarTransaction(updated);
         }
-      } catch (e) {
+      } catch (_) {
         final updated = StellarTransaction(
           id: tx.id,
           fromAddress: tx.fromAddress,
@@ -399,13 +338,15 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
 
     _loadTransactions();
     _fetchBalances();
-    setState(() {
-      _isLoading = false;
-      _statusMessage = "";
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Sync complete!")),
-    );
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        _statusMessage = "";
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Mainnet Sync complete!")),
+      );
+    }
   }
 
   @override
@@ -422,7 +363,7 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Stellar Horizon Wallet",
+          "Stellar Soroban Mainnet",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -444,7 +385,7 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
               ),
               Switch(
                 value: _isOnline,
-                activeColor: Colors.greenAccent,
+                activeThumbColor: Colors.greenAccent,
                 inactiveThumbColor: Colors.redAccent,
                 onChanged: (val) {
                   setState(() {
@@ -465,7 +406,9 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildWalletCard(),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
+                _buildContractInfoCard(),
+                const SizedBox(height: 16),
                 _buildActionButtons(),
                 const SizedBox(height: 20),
                 _buildTransferForm(),
@@ -523,14 +466,14 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue.shade900.withOpacity(0.85), Colors.purple.shade900.withOpacity(0.85)],
+          colors: [Colors.blue.shade900.withValues(alpha: 0.85), Colors.purple.shade900.withValues(alpha: 0.85)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.15)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
         boxShadow: [
-          BoxShadow(color: Colors.blueAccent.withOpacity(0.25), blurRadius: 20, offset: const Offset(0, 8))
+          BoxShadow(color: Colors.blueAccent.withValues(alpha: 0.25), blurRadius: 20, offset: const Offset(0, 8))
         ],
       ),
       child: Column(
@@ -543,11 +486,11 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(
-                  "STELLAR TESTNET",
+                  "STELLAR MAINNET / SOROBAN",
                   style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -611,23 +554,47 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
     );
   }
 
+  Widget _buildContractInfoCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B).withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.shield_outlined, color: Colors.amberAccent, size: 18),
+              SizedBox(width: 8),
+              Text(
+                "SOROBAN MAINNET SMART CONTRACTS",
+                style: TextStyle(color: Colors.amberAccent, fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Text("translate_credits:", style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
+          const SelectableText(
+            translateCreditsContractId,
+            style: TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace'),
+          ),
+          const SizedBox(height: 8),
+          const Text("gift_voucher:", style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
+          const SelectableText(
+            giftVoucherContractId,
+            style: TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildActionButtons() {
     return Row(
       children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: _fundWithFriendbot,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1E293B),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
-            icon: const Icon(Icons.monetization_on_outlined, color: Colors.blueAccent),
-            label: const Text("Friendbot Faucet"),
-          ),
-        ),
-        const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _hasTrustline ? null : _establishTrustline,
@@ -638,7 +605,7 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
             icon: Icon(Icons.verified_user_outlined, color: _hasTrustline ? Colors.grey : Colors.greenAccent),
-            label: Text(_hasTrustline ? "Trustline Active" : "Add Credits Asset"),
+            label: Text(_hasTrustline ? "Trustline Active" : "Add Mainnet Asset"),
           ),
         ),
       ],
@@ -649,9 +616,9 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withOpacity(0.6),
+        color: const Color(0xFF1E293B).withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Form(
         key: _formKey,
@@ -675,15 +642,7 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
                 ),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () {
-                      if (!_hasTrustline) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Please add the Credits asset trustline first.")),
-                        );
-                        return;
-                      }
-                      setState(() => _activeTab = "TranslateCredits");
-                    },
+                    onTap: () => setState(() => _activeTab = "TranslateCredits"),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
@@ -744,8 +703,8 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: Text(
-                _isOnline ? "Send Transaction Now" : "Queue Transaction Offline",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                _isOnline ? "Send Transaction Now (Mainnet)" : "Queue Transaction Offline",
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -779,16 +738,16 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E293B).withOpacity(0.4),
+            color: const Color(0xFF1E293B).withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.02)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.02)),
           ),
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: isSent ? Colors.redAccent.withOpacity(0.1) : Colors.greenAccent.withOpacity(0.1),
+                  color: isSent ? Colors.redAccent.withValues(alpha: 0.1) : Colors.greenAccent.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -803,12 +762,12 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isSent ? "Sent To: ${tx.toAddress.substring(0, 8)}..." : "Received From: ${tx.fromAddress.substring(0, 8)}...",
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                      isSent ? "To: ${tx.toAddress.substring(0, 8)}..." : "From: ${tx.fromAddress.substring(0, 8)}...",
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      DateFormat('MMM dd, HH:mm:ss').format(tx.timestamp),
+                      DateFormat('MMM dd, yyyy - hh:mm a').format(tx.timestamp),
                       style: const TextStyle(color: Colors.white38, fontSize: 11),
                     ),
                   ],
@@ -820,21 +779,21 @@ class _StellarTransactionScreenState extends State<StellarTransactionScreen> {
                   Text(
                     "${isSent ? '-' : '+'}${tx.amount} ${tx.assetCode}",
                     style: TextStyle(
-                      color: isSent ? Colors.white : Colors.greenAccent,
+                      color: isSent ? Colors.redAccent : Colors.greenAccent,
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 14,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      tx.status.toUpperCase(),
-                      style: TextStyle(color: statusColor, fontSize: 9, fontWeight: FontWeight.bold),
+                      tx.status,
+                      style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],

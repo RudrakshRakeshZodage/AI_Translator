@@ -8,6 +8,14 @@ Bharat Ki Awaaz enables uninterrupted voice translation across 31+ regional lang
 
 ---
 
+## 📸 Feature Showcase
+
+| Splash | Connect Wallet | Onboarding | Dashboard | Soroban Wallet | History | Offline Translation |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| <img src="screenshots/1.jpg" width="140" /> | <img src="screenshots/2.jpg" width="140" /> | <img src="screenshots/3.jpg" width="140" /> | <img src="screenshots/4.jpg" width="140" /> | <img src="screenshots/5.jpg" width="140" /> | <img src="screenshots/6.jpg" width="140" /> | <img src="screenshots/7.jpg" width="140" /> |
+
+---
+
 ## 🎯 Problem Statement (PS) & Unique Selling Proposition (USP)
 
 ### 📌 Problem Solved (PS)
